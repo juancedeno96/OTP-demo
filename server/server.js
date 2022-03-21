@@ -9,13 +9,17 @@ const client = require("twilio")(accountSid, authToken);
 const jwt = require("jsonwebtoken");
 const JWT_AUTH_TOKEN = process.env.JWT_AUTH_TOKEN;
 const JWT_REFRESH_TOKEN = process.env.JWT_REFRESH_TOKEN;
-let refreshToken = [];
+const cors = require("cors");
+let refreshTokens = [];
 
 const smsKey = process.env.SMS_SECRET_KEY;
+
+const PORT = process.env.PORT;
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({ origin: `http://localhost:3000`, credentials: true }));
 
 app.post("/sendOTP", (req, res) => {
   const phone = req.body.phone;
@@ -26,11 +30,11 @@ app.post("/sendOTP", (req, res) => {
   const hash = crypto.createHmac("sha256", smsKey).update(data).digest("hex");
   const fullhash = `${hash}.${expires}`;
 
-  // client.messages.create({
-  //     body: `Your one-time login password for CFM is ${otp}`,
-  //     from: +12344054767,
-  //     to: phone
-  // }).then((messages)=> console.log(messages)).catch((err)=>console.error(err))
+  client.messages.create({
+      body: `Your one-time login password for CFM is ${otp}`,
+      from: +12344054767,
+      to: phone
+  }).then((messages)=> console.log(messages)).catch((err)=>console.error(err))
   res.status(200).send({ phone, hash: fullhash, otp });
 });
 
@@ -53,13 +57,13 @@ app.post("/verifyOTP", (req, res) => {
     .digest("hex");
 
   if (newCalculatedHash === hashValue) {
-    refreshToken.push(refreshToken);
     const accessToken = jwt.sign({ data: phone }, JWT_AUTH_TOKEN, {
       expiresIn: "30s",
     });
     const refreshToken = jwt.sign({ data: phone }, JWT_REFRESH_TOKEN, {
-      expiresIn: "30s",
+      expiresIn: "1y",
     });
+    refreshTokens.push(refreshToken);
 
     res
       .status(202)
@@ -134,5 +138,12 @@ app.post("/refresh", (req, res) => {
     }
   });
 });
-
-app.listen(4000);
+app.get(`/logout`, (req, res) => {
+  res
+    .clearCookie("refreshToken")
+    .clearCookie("accessToken")
+    .clearCookie("authSession")
+    .clearCookie("refreshTokenID")
+    .send("User Logged Out");
+});
+app.listen(PORT, () => console.log(`running on port ${PORT}`));
