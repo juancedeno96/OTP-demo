@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const JWT_AUTH_TOKEN = process.env.JWT_AUTH_TOKEN;
 const JWT_REFRESH_TOKEN = process.env.JWT_REFRESH_TOKEN;
 const cors = require("cors");
+const path = require('path')
 let refreshTokens = [];
 
 const smsKey = process.env.SMS_SECRET_KEY;
@@ -146,4 +147,9 @@ app.get(`/logout`, (req, res) => {
     .clearCookie("refreshTokenID")
     .send("User Logged Out");
 });
+
+app.use(express.static(__dirname + '/../build'))
+app.get('*', (req, res)=>{
+  res.sendFile(path.join(__dirname, '../build.index.html'))
+})
 app.listen(PORT, () => console.log(`running on port ${PORT}`));
