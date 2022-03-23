@@ -17,7 +17,7 @@ function OtpVerify(props) {
 
   const confirmOtp = () => {
     axios
-      .post("http://localhost:4000/verifyOTP", {
+      .post("/verifyOTP", {
         phone: `${value.phone}`,
         hash: `${value.hash}`,
         otp: `${value.otp}`,

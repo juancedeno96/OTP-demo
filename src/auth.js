@@ -19,7 +19,7 @@ class Auth {
 		}
 		if (!accessToken && refreshToken) {
 			axios
-				.post('http://localhost:4000/refresh', {
+				.post('/refresh', {
 					withCredentials: true
 				})
 				.then(function(res) {

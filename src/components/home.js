@@ -30,7 +30,7 @@ function Home() {
 
 	const logout = () => {
 		axios
-			.get('http://localhost:4000/logout')
+			.get('/logout')
 			.then((res) => {
 				console.log(res.data);
 			})
